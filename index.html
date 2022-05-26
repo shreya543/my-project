@@ -1,0 +1,237 @@
+
+<html>
+
+<title>Tik Tac Toe Test</title>
+
+<link href="style.css" rel="stylesheet"/>
+    <script src="script.js"></script>
+
+<body>
+  <div class="title-line">
+    <h2>Tic Tac Toe Test</h2>
+    <button class="btn btn-warning" onclick="reset_game(give_tips=true)">Reset</button>
+    <div class="clear"></div>
+  </div>
+  
+  <div class="alert alert-danger" id="alert-game-ends">
+    <h2>GAME OVER &nbsp;&nbsp; <br><small>2 secs later will be a new game.</small></h2>
+  </div>
+  
+  <div class="alert alert-warning" id="alert-game-reset">
+    <h2>GAME RESET</h2>
+  </div>
+  <div class="tictactoe-container">
+    <div class="cell-line">
+      <div class="cell" id="cell-1"></div>
+      <div class="cell" id="cell-2"></div>
+      <div class="cell" id="cell-3"></div>
+      <div class="clear"></div>
+    </div>
+    <div class="cell-line">
+      <div class="cell" id="cell-4"></div>
+      <div class="cell" id="cell-5"></div>
+      <div class="cell" id="cell-6"></div>
+      <div class="clear"></div>
+    </div>
+    <div class="cell-line">
+      <div class="cell" id="cell-7"></div>
+      <div class="cell" id="cell-8"></div>
+      <div class="cell" id="cell-9"></div>
+      <div class="clear"></div>
+    </div>
+  </div>
+  
+  <div class="modal fade" id="piece-chooser">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title">Tic Tac Toe Test</h1>
+        </div>
+        <div class="modal-body">
+          <p>Choose your piece</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="piece-X" data-dismiss="modal" onclick="Piece.setPlayer_OX()">X</button>
+          <button class="btn btn-primary" id="piece-O" data-dismiss="modal" onclick="Piece.setPlayer_XO()">O</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+</body>
+<script>
+    var _sel = function (selector) {
+    return document.getElementById(selector);
+  };
+  
+ 
+  var _selAll = function (selector) {
+      return document.querySelectorAll(selector);
+  };
+  
+  
+  var _showAlert = function (ID) {
+      function hideAlert() {
+          setTimeout(function(){
+              $("#" + ID).hide(1000);
+          }, 3000)
+      }
+  
+      $("#" + ID).show(500, hideAlert());
+  
+  
+  };
+  
+  
+  var PC_or_Player = 1;
+  
+  
+  var Piece = {
+    PC: "X",
+    Player: "O",
+  
+    setPlayer_XO: function () {
+        Piece.PC = "X";
+        Piece.Player = "O";
+    },
+  
+    setPlayer_OX: function () {
+        Piece.PC = "O";
+        Piece.Player = "X";
+    }
+  };
+  
+  
+
+  function PC_drops() {
+     
+  
+      if(is_game_ends()) return;
+  
+      
+      let cell_id;
+      do{
+         cell_id = Math.floor(Math.random() * 9 + 1)
+      } while(_sel("cell-" + cell_id).currentState !== "empty");
+  
+      
+      _sel("cell-" + cell_id).currentState = Piece.PC;
+      _sel("cell-" + cell_id).innerText = Piece.PC;
+  
+  }
+  
+  function Player_drops() {
+  
+  }
+  
+
+  function drop_steps() {
+      let clickedCell = window.event.srcElement;          
+  
+     
+  
+      if(clickedCell.currentState === "empty") {
+          
+          if(is_game_ends()){
+              return;
+          }
+
+          clickedCell.currentState = Piece.Player;
+          clickedCell.innerText = Piece.Player;
+  
+          
+          PC_drops();
+  
+          
+          if(is_game_ends()){
+              end_and_restart_game();
+          }
+      }
+  }
+  
+  
+  function is_game_ends() {
+      function is_anyone_wins(){
+          function allThreeCellsAreSame(cell1, cell2, cell3){
+              cell1 = _sel(cell1);
+              cell2 = _sel(cell2);
+              cell3 = _sel(cell3);
+              return((cell1.innerText === "X" && cell2.innerText === "X" && cell3.innerText === "X")
+                      || (cell1.innerText === "O" && cell2.innerText === "O" && cell3.innerText === "O"));
+          }
+  
+          if(    allThreeCellsAreSame("cell-1", "cell-2", "cell-3")
+              || allThreeCellsAreSame("cell-4", "cell-5", "cell-6")
+              || allThreeCellsAreSame("cell-7", "cell-8", "cell-9")
+  
+              || allThreeCellsAreSame("cell-1", "cell-4", "cell-7")
+              || allThreeCellsAreSame("cell-2", "cell-5", "cell-8")
+              || allThreeCellsAreSame("cell-3", "cell-6", "cell-9")
+  
+              || allThreeCellsAreSame("cell-1", "cell-5", "cell-9")
+              || allThreeCellsAreSame("cell-3", "cell-5", "cell-7"))
+          {
+              return true;
+          }
+          else
+              return false;
+      }
+  
+      function is_no_one_wins(){
+          let has_empty_cell = false;
+          for(let i = 1; i <= 9; i++) {
+              if(_sel("cell-" + i).currentState === "empty"){
+                  has_empty_cell = true;
+                  break;
+              }
+          }
+  
+          return !has_empty_cell;
+      }
+  
+      if(is_anyone_wins())
+          return [true, "anyone_wins"];
+  
+      if(is_no_one_wins())
+          return [true, "no_one_wins"];
+  
+      return false;
+  
+  }
+  
+  
+
+  function reset_game(give_tips) {
+      
+      for(let i = 0; i < _selAll(".cell").length; i++){
+          _selAll(".cell")[i].currentState = "empty";
+          _selAll(".cell")[i].innerText = "";
+      }
+  
+      if(give_tips)
+          _showAlert("alert-game-reset");
+  }
+  
+
+  function end_and_restart_game(){
+      _showAlert("alert-game-ends");
+  
+      setTimeout(reset_game, 2000 + 1000);
+  }
+  
+
+  function init_game() {
+      for(let i = 0; i < _selAll(".cell").length; i++){
+    
+          _selAll(".cell")[i].currentState = "empty";
+  
+          _selAll(".cell")[i].onclick = drop_steps;
+      }
+  
+      
+  }
+  
+  init_game();
+</script>
+</html>
